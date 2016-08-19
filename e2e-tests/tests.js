@@ -25507,16 +25507,12 @@ var Input = function (_React$Component) {
       // disable MUI js
       this.refs.inputEl._muiTextfield = true;
     }
-
-    //ADDED IN THIS FUNCTION in order to update the innerValue even when new props are received due to programmatic changes
-    //and onChange is not called.
-
   }, {
     key: 'componentWillReceiveProps',
     value: function componentWillReceiveProps(nextProps) {
-      this.setState({
-        innerValue: nextProps.value
-      });
+      // update innerValue when new value is received to handle programmatic
+      // changes to input box
+      if ('value' in nextProps) this.setState({ innerValue: nextProps.value });
     }
   }, {
     key: 'onChange',
@@ -27145,6 +27141,40 @@ describe('react/input', function () {
     var elem = _react2.default.createElement(_input2.default, { defaultValue: 'my input' });
     var instance = _reactAddonsTestUtils2.default.renderIntoDocument(elem);
     var inputEl = _reactAddonsTestUtils2.default.findRenderedDOMComponentWithTag(instance, 'input');
+
+    // check input element value
+    _assert2.default.equal(inputEl.value, 'my input');
+
+    // check empty/not-empty classes
+    _assert2.default.equal(/mui--is-empty/.test(inputEl.className), false);
+    _assert2.default.equal(/mui--is-not-empty/.test(inputEl.className), true);
+  });
+
+  it('renders component with defaultValue received by update', function () {
+    var ParentClass = _react2.default.createClass({
+      displayName: 'ParentClass',
+      getInitialState: function getInitialState() {
+        return { testState: 'init' };
+      },
+      render: function render() {
+        return _react2.default.createElement(_input2.default, { defaultValue: 'my input' });
+      }
+    });
+
+    var parentElem = _react2.default.createElement(ParentClass, null);
+    var parentInstance = _reactAddonsTestUtils2.default.renderIntoDocument(parentElem);
+    var instance = _reactAddonsTestUtils2.default.findRenderedComponentWithType(parentInstance, _input2.default);
+    var inputEl = _reactAddonsTestUtils2.default.findRenderedDOMComponentWithTag(instance, 'input');
+
+    // check input element value
+    _assert2.default.equal(inputEl.value, 'my input');
+
+    // check empty/not-empty classes
+    _assert2.default.equal(/mui--is-empty/.test(inputEl.className), false);
+    _assert2.default.equal(/mui--is-not-empty/.test(inputEl.className), true);
+
+    // changing state calls componentWillReceiveProps()
+    parentInstance.setState({ testState: 'new' });
 
     // check input element value
     _assert2.default.equal(inputEl.value, 'my input');
